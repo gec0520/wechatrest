@@ -1,2 +1,2 @@
 # wechatrest
-the repository for wechat restaurant
+the repository for wechat restaurant 20170519
