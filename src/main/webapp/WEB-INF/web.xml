@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xmlns="http://java.sun.com/xml/ns/javaee" 
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+					http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" 
+								id="WebApp_ID" version="3.0">
+  <display-name>demo</display-name>
+  <!-- 
+  <context:component-scan base-package="com.train.extdirectspring,ch.ralscha.extdirectspring" />
+  
+  <bean id="extDirectSpringConfiguration" class="ch.ralscha.extdirectspring.controller.Configuration" p:timeout="12000"  
+    p:maxRetries="10" p:enableBuffer="false">  
+    <property name="exceptionToMessage">  
+        <map>  
+            <entry key="java.lang.IllegalArgumentException" value="illegal argument" />  
+            <entry key="org.springframework.beans.factory.NoSuchBeanDefinitionException">  
+                <null />  
+            </entry>  
+        </map>  
+    </property>  
+</bean> 
+ -->
+</web-app>
