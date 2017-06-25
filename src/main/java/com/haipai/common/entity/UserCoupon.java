@@ -30,6 +30,8 @@ public class UserCoupon implements Serializable {
 	private String couponCreateTime;
 	private String couponExpireTime;
 	private String couponValidate;
+	private Integer couponType;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "coupon_id")
@@ -100,6 +102,15 @@ public class UserCoupon implements Serializable {
 
 	public void setExpireTime(Date expireTime) {
 		this.expireTime = expireTime;
+	}
+
+	@Column(name = "coupon_type")
+	public Integer getCouponType() {
+		return couponType;
+	}
+
+	public void setCouponType(Integer couponType) {
+		this.couponType = couponType;
 	}
 
 	@Transient

@@ -6,11 +6,41 @@
 
 <title>用户红包列表</title>
 
-<link rel="stylesheet" type="text/css" href="ext/ext-theme-crisp-all.css">
+<link rel="stylesheet" type="text/css"
+	href="ext/ext-theme-crisp-all.css">
+<link rel="stylesheet" type="text/css" href="css/outer.css">
 <script type="text/javascript" src="ext/bootstrap.js"></script>
 <script type="text/javascript" src="ext/ext-theme-crisp.js"></script>
 <script type="text/javascript" src="jweixin/jweixin-1.2.0.js"></script>
 <script type="text/javascript" src="jquery/jquery-1.4.1.min.js"></script>
 <script type="text/javascript" src="app.js"></script>
 </head>
+<script type="text/javascript">
+	function setCookie(NameOfCookie, value, expireTime) {
+		var ExpireDate = new Date();
+		ExpireDate.setTime(ExpireDate.getTime() + expireTime);
+		document.cookie = NameOfCookie + "=" + escape(value) + "; expires="
+				+ ExpireDate.toGMTString();
+	}
+	function getCookie(NameOfCookie) {
+		if (document.cookie.length > 0) {
+			begin = document.cookie.indexOf(NameOfCookie + "=");
+			if (begin != -1) {
+				begin += NameOfCookie.length + 1;//cookie值的初始位置   
+				end = document.cookie.indexOf(";", begin);//结束位置   
+				if (end == -1) {
+					end = document.cookie.length;//没有;则end为字符串结束位置   
+				}
+				return unescape(document.cookie.substring(begin, end));
+			}
+		}
+		return null;
+	}
+	function delCookie(NameOfCookie) {
+		if (getCookie(NameOfCookie)) {
+			document.cookie = NameOfCookie + "="
+					+ "; expires=Thu, 01-Jan-70 00:00:01 GMT";
+		}
+	}
+</script>
 </html>

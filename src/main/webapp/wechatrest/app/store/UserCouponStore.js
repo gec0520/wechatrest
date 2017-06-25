@@ -8,10 +8,9 @@ Ext.define('WeChatRest.store.UserCouponStore', {
 		reader : {
 			type : "json",
 			rootProperty : "result"
-		},
+		}/*,
 		extraParams: {
 			fromUserName:'oi88H1Y8n5sj5b3yrJeVtVBAB6uQ'
-		}
-	},
-	pageSize : 50,
+		}*/
+	}
 });

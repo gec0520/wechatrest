@@ -73,6 +73,7 @@ public class QRCodeUtil {
 		String requestUrl = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=TOKEN";
 		requestUrl = requestUrl.replace("TOKEN", accessToken);
 		String outputStr = "{\"action_name\": \"QR_LIMIT_STR_SCENE\", \"action_info\":{\"scene\": {\"scene_str\":%s}}}";
+		logger.info("createPermanentORCode sceneStr {}",sceneStr);
 		JSONObject jsonObject = HttpRequestUtil.httpRequestJSONObject(requestUrl, HttpRequestUtil.POST_METHOD,
 				String.format(outputStr, sceneStr));
 		if (null != jsonObject) {
@@ -132,9 +133,9 @@ public class QRCodeUtil {
 		is.close();
 	}
 	public static void main(String[] args) throws Exception{
-		AccessToken accessToken = WechatUtil.getAccessToken("wx666b675805356a12", "25466e932ac4b4c3b5216ad782d5dde1");
+		AccessToken accessToken = WechatUtil.getAccessToken("wx588656d56aa7849e", "04e9555cc936bba1f4f80dc439ef0d27");
 		System.out.println(String.format("AccessToken is %s", accessToken));
-		String permanentORCode = createPermanentORCode(accessToken.getToken(), "123");
+		String permanentORCode = createPermanentORCode(accessToken.getToken(), "340");
 		// WeChatQRCode weChatQRCode =
 		// WechatUtil.createTemporaryORCode(accessToken.getToken(),
 		// Integer.toString(accessToken.getExpiresIn()), 123);

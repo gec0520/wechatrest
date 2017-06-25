@@ -2,13 +2,10 @@ package com.haipai.common.controller;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.haipai.common.entity.AppIdSecretConfig;
-import com.haipai.common.entity.UserCoupon;
 import com.haipai.common.service.AppIdSecretConfigService;
 import com.haipai.common.service.JsApiService;
 import com.haipai.common.service.UserCouponService;
@@ -30,9 +26,6 @@ import net.sf.json.JSONObject;
 @Controller
 public class UserController {
 	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-
-	@Autowired
-	private UserCouponService userCouponService;
 
 	@Autowired
 	private JsApiService jsApiService;
@@ -51,19 +44,6 @@ public class UserController {
 		return resp;
 	}
 
-	@RequestMapping(value = "/userCoupon")
-	@ResponseBody
-	public List<UserCoupon> getUserCoupon(String fromUserName, HttpSession session) {
-		try {
-			String fromUserNameFromSession = (String) session.getAttribute("wechatUser");
-			logger.info("getUserCoupon fromUserNameFromSession:{}", fromUserNameFromSession);
-			return userCouponService.findByFromUserName(fromUserNameFromSession);
-		} catch (Exception e) {
-			logger.error("getUserCoupon error", e);
-		}
-		return Collections.emptyList();
-	}
-
 	@SuppressWarnings("deprecation")
 	@RequestMapping(value = "/redirect", method = RequestMethod.GET)
 	public String weixinDirect(HttpServletRequest request, HttpServletResponse response) {
@@ -71,6 +51,7 @@ public class UserController {
 		AppIdSecretConfig appIdSecretConfig = appIdSecretConfigService.findByWechatPublicId(wechatPublicId);
 		request.getSession().setAttribute("appId", appIdSecretConfig.getAppId());
 		request.getSession().setAttribute("appSecret", appIdSecretConfig.getAppSecret());
+		request.getSession().setAttribute("wechatPublicId", wechatPublicId);
 		StringBuilder redirectUrl = new StringBuilder(
 				"redirect:https://open.weixin.qq.com/connect/oauth2/authorize?appid=");
 		redirectUrl.append(appIdSecretConfig.getAppId()).append("&redirect_uri=")

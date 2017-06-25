@@ -2,6 +2,7 @@ package com.haipai.common.service.impl;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,27 +14,25 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.haipai.common.entity.AppIdSecretConfig;
+import com.haipai.common.constant.WeChatRestConstant;
+import com.haipai.common.entity.AppConfig;
 import com.haipai.common.entity.UserCoupon;
-import com.haipai.common.entity.WechatTokenConfig;
+import com.haipai.common.entity.UserGroupInfo;
 import com.haipai.common.message.resp.Article;
 import com.haipai.common.message.resp.NewsMessage;
 import com.haipai.common.message.resp.TextMessage;
+import com.haipai.common.service.AppConfigService;
 import com.haipai.common.service.AppIdSecretConfigService;
 import com.haipai.common.service.CoreService;
 import com.haipai.common.service.UserCouponService;
 import com.haipai.common.service.UserInfoService;
 import com.haipai.common.service.WechatTokenConfigService;
-import com.haipai.common.usergroup.UserGroupInfo;
-import com.haipai.common.util.AccessToken;
 import com.haipai.common.util.MessageUtil;
-import com.haipai.common.util.QRCodeUtil;
-import com.haipai.common.util.WechatUtil;
 
 @Service
 @Transactional
 public class CoreServiceImpl implements CoreService {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(CoreServiceImpl.class);
 	/**
 	 * 处理微信发来的请求
@@ -43,21 +42,18 @@ public class CoreServiceImpl implements CoreService {
 	 */
 	@Autowired
 	private UserCouponService userCouponService;
-	
-	@Autowired
-	private AppIdSecretConfigService appIdSecretConfigService;
 
 	@Autowired
 	private UserInfoService userInfoService;
-	
+
 	@Autowired
-	private WechatTokenConfigService wechatTokenConfigService;
-	
+	private AppConfigService appConfigService;
+
 	public String processRequest(HttpServletRequest request) {
 		String respMessage = null;
 		try {
 			// 默认返回的文本消息内容
-			String respContent = "请求处理异常，请稍候尝试！";
+			String respContent = "感谢您对本公众号的关注，优惠活动请至菜单查询";
 
 			// xml请求解析
 			Map<String, String> requestMap = MessageUtil.parseXml(request);
@@ -79,23 +75,23 @@ public class CoreServiceImpl implements CoreService {
 			List<Article> articleList = new ArrayList<>();
 			// 文本消息
 			if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_TEXT)) {
-				respContent = "您发送的是文本消息！";
+				respContent = "感谢您对本公众号的关注，优惠活动请至菜单查询";
 			}
 			// 图片消息
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_IMAGE)) {
-				respContent = "您发送的是图片消息！";
+				respContent = "感谢您对本公众号的关注，优惠活动请至菜单查询";
 			}
 			// 地理位置消息
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_LOCATION)) {
-				respContent = "您发送的是地理位置消息！";
+				respContent = "感谢您对本公众号的关注，优惠活动请至菜单查询";
 			}
 			// 链接消息
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_LINK)) {
-				respContent = "您发送的是链接消息！";
+				respContent = "感谢您对本公众号的关注，优惠活动请至菜单查询";
 			}
 			// 音频消息
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_VOICE)) {
-				respContent = "您发送的是音频消息！";
+				respContent = "感谢您对本公众号的关注，优惠活动请至菜单查询";
 			}
 			// 事件推送
 			else if (msgType.equals(MessageUtil.REQ_MESSAGE_TYPE_EVENT)) {
@@ -103,14 +99,52 @@ public class CoreServiceImpl implements CoreService {
 				String eventType = requestMap.get("Event");
 				// 订阅
 				if (eventType.equals(MessageUtil.EVENT_TYPE_SUBSCRIBE)) {
-					int couponNum = 3;
-					NewsMessage newsMessage  = generateCoupons(fromUserName, toUserName, articleList, couponNum);
-					respMessage = MessageUtil.newsMessageToXml(newsMessage);
+					userInfoService.addSubscribeGroupUser(fromUserName, toUserName);
+					String eventKey = requestMap.get("EventKey");
+					logger.info("processRequest eventKey {}",eventKey);//二维码的参数
+					if(eventKey!=null && !"".equals(eventKey)){
+						String[] eventKeyArray = eventKey.split("_");
+						if(eventKeyArray!=null && eventKeyArray.length==2){
+							Long couponId = Long.parseLong(eventKeyArray[1]);
+							UserCoupon userCoupon = userCouponService.findByCouponId(couponId);
+							if(userCoupon!=null && userCoupon.getCouponType()==4){//被分享用户扫描分享红包的二维码则追踪分享者,给予一个红包奖励
+								String refereeUserId = userCoupon.getFromUserName();
+								if(!fromUserName.equals(refereeUserId)){//被分享的用户与分享的用户不是同一人才给予分享者红包奖励，防止自己将红包分享给自己
+									Map<Integer,Map<Integer,Integer>> couponMapForReferee = new HashMap<>();
+									Map<Integer,Integer> couponHBNumAndValue = new HashMap<>();
+									couponHBNumAndValue.put(1, 10);
+									couponMapForReferee.put(3, couponHBNumAndValue);//10元红包一张
+									userCouponService.generateCouponsForRefereeAfterUseSharedCoupon(refereeUserId, toUserName, couponMapForReferee);
+								}
+							}
+						}
+					}
+					
+					Map<Integer,Map<Integer,Integer>> couponMap = new HashMap<>();
+					Map<Integer,Integer> couponDKQNumAndValue = new HashMap<>();
+					couponDKQNumAndValue.put(1, 10);//10元抵扣券一张
+					couponMap.put(1, couponDKQNumAndValue);
+					Map<Integer,Integer> couponZKQNumAndValue = new HashMap<>();
+					couponZKQNumAndValue.put(1, 10);//10元折扣券一张
+					couponMap.put(2, couponZKQNumAndValue);//折扣券一张
+					Map<Integer,Integer> couponHBNumAndValue = new HashMap<>();
+					couponHBNumAndValue.put(1, 10);//10元红包一张
+					couponMap.put(3, couponHBNumAndValue);//红包一张
+					List<UserCoupon> userCouponList = userCouponService.findByFromUserNameAndToUserName(fromUserName,toUserName);
+					if(userCouponList==null || userCouponList.isEmpty()){//重复关注不给予优惠券
+						NewsMessage newsMessage = userCouponService.generateCouponsAfterSubscribe(fromUserName, toUserName, articleList,
+								couponMap);
+						respMessage = MessageUtil.newsMessageToXml(newsMessage);
+						return respMessage;
+					}
+					respContent="";
+					textMessage.setContent(respContent);
+					respMessage = MessageUtil.textMessageToXml(textMessage);
 					return respMessage;
 				}
 				// 取消订阅
 				else if (eventType.equals(MessageUtil.EVENT_TYPE_UNSUBSCRIBE)) {
-					// TODO 取消订阅后用户再收不到公众号发送的消息，因此不需要回复消息
+					userInfoService.deleteSubscribeGroupUser(fromUserName, toUserName);
 				}
 				// 自定义菜单点击事件
 				else if (eventType.equals(MessageUtil.EVENT_TYPE_CLICK)) {
@@ -118,24 +152,74 @@ public class CoreServiceImpl implements CoreService {
 					respContent = "点击菜单！";
 				} else if (eventType.equals(MessageUtil.EVENT_TYPE_SCAN)) {
 					if (requestMap.get("EventKey") != null && "123".equals(requestMap.get("EventKey"))) {
-						return "";
+						respContent="";
+						textMessage.setContent(respContent);
+						respMessage = MessageUtil.textMessageToXml(textMessage);
+						return respMessage;
+					}
+					UserGroupInfo userGroupInfo = userInfoService.findBywechatPublicIdAndOpenId(toUserName,
+							fromUserName);
+
+					AppConfig appConfig = appConfigService
+							.findByConfigCode(WeChatRestConstant.QRCODE_SCAN_GROUP.getName());
+					if (appConfig == null) {
+						respContent="";
+						textMessage.setContent(respContent);
+						respMessage = MessageUtil.textMessageToXml(textMessage);
+						return respMessage;
+					}
+
+					String[] QRCodeScanGroups = appConfig.getConfigValue().split(",");
+					if (QRCodeScanGroups == null || QRCodeScanGroups.length == 0) {
+						respContent="";
+						textMessage.setContent(respContent);
+						respMessage = MessageUtil.textMessageToXml(textMessage);
+						return respMessage;
+					}
+
+					if (userGroupInfo == null) {
+						respContent="";
+						textMessage.setContent(respContent);
+						respMessage = MessageUtil.textMessageToXml(textMessage);
+						return respMessage;
+					}
+
+					if (requestMap.get("EventKey") == null || "".equals(requestMap.get("EventKey"))) {
+						respContent="";
+						textMessage.setContent(respContent);
+						respMessage = MessageUtil.textMessageToXml(textMessage);
+						return respMessage;
 					}
 					
-					String appId = (String) request.getSession().getAttribute("appId");
-					WechatTokenConfig wechatTokenConfig = wechatTokenConfigService.findByTokenTypeAndAppId("access_token", appId);
-					UserGroupInfo userGroupInfo = userInfoService.getUserGroupInfo(wechatTokenConfig.getTokenValue(), fromUserName);
-					if(userGroupInfo!=null && "1".equals(userGroupInfo.getGroupid())){
-						return userGroupInfo+"|"+fromUserName;
+					String eventKey = requestMap.get("EventKey");
+					Long couponId = Long.parseLong(eventKey);
+					Boolean isScanUserInScanGroup = false;
+					UserCoupon userCoupon = userCouponService.findByCouponId(couponId);
+					if(userCoupon == null){
+						respContent="";
+						textMessage.setContent(respContent);
+						respMessage = MessageUtil.textMessageToXml(textMessage);
+						return respMessage;
 					}
-					if (requestMap.get("EventKey") != null && !"".equals(requestMap.get("EventKey"))) {
-						Long couponId = Long.parseLong((requestMap.get("EventKey")));
-						UserCoupon userCoupon = userCouponService.findByCouponId(couponId);
-						String result = useCoupon(userCoupon);
-						if ("success".equals(result)) {
-							respContent = "您正在使用" + userCoupon.getCouponValue() + "元优惠券";
-						} else {
-							respContent = result;
+					if(userCoupon.getCouponType()==1 || userCoupon.getCouponType()==3){//只有关注该公众号并且由系统赠送的红包/抵扣券才可以使用,分享出去的红包/抵扣券不能使用
+						for (String QRCodeScanGroup : QRCodeScanGroups) {
+							logger.info("QRCodeScanGroup  {} userGroupInfo.getGroupid() {}",QRCodeScanGroup,userGroupInfo.getGroupid());
+							if (QRCodeScanGroup.equals(userGroupInfo.getGroupid())) {
+								String result = userCouponService.useCoupon(userCoupon);
+								if ("success".equals(result)) {
+									respContent = "您正在使用" + userCoupon.getCouponValue() + "元优惠券";
+								} else {
+									respContent = result;
+								}
+								isScanUserInScanGroup= true;
+								break;
+							}
 						}
+						if(!isScanUserInScanGroup){
+							respContent="您没有扫描使用优惠券的权限，请联系该店的服务人员扫描使用";
+						}
+					}else{
+						respContent="该优惠券已被分享无法使用,请至'我的优惠券'菜单中使用可用的优惠券";
 					}
 				} else {
 					respContent = "";
@@ -146,76 +230,9 @@ public class CoreServiceImpl implements CoreService {
 			respMessage = MessageUtil.textMessageToXml(textMessage);
 		} catch (Exception e) {
 			respMessage = "exception";
-			logger.error("processRequest error:",e);
+			logger.error("processRequest error:", e);
 		}
 
 		return respMessage;
-	}
-
-	private NewsMessage generateCoupons(String fromUserName, String toUserName, List<Article> articleList, int couponNum) {
-		NewsMessage newsMessage = new NewsMessage();
-		AppIdSecretConfig appIdSecretConfig = appIdSecretConfigService.findByWechatPublicId(toUserName);
-		AccessToken accessToken = WechatUtil.getAccessToken(appIdSecretConfig.getAppId(), appIdSecretConfig.getAppSecret());
-		Article articleSummaryInfo = new Article();
-		articleSummaryInfo.setTitle("恭喜你获得优惠券" + couponNum + "张");
-		articleSummaryInfo.setDescription("优惠券");
-		articleSummaryInfo.setPicUrl("");
-		articleSummaryInfo.setUrl("");
-		articleList.add(articleSummaryInfo);
-		try {
-			for (int i = 1; i <= couponNum; i++) {
-				UserCoupon userCoupon;
-				userCoupon = allocateCouponToUser(fromUserName, toUserName);
-				String permanentORCode = QRCodeUtil.createPermanentORCode(accessToken.getToken(),
-						Long.toString(userCoupon.getCouponId()));
-				String showUrl = QRCodeUtil.showQRcode(permanentORCode);
-				userCoupon.setCouponQRCode(showUrl);
-				userCouponService.saveUserCoupon(userCoupon);
-				Article article = new Article();
-				article.setTitle("优惠券" + userCoupon.getCouponValue() + "元");
-				article.setDescription("优惠券");
-				article.setPicUrl("");
-				article.setUrl(showUrl);
-				articleList.add(article);
-			}
-			newsMessage.setToUserName(fromUserName);
-			newsMessage.setFromUserName(toUserName);
-			newsMessage.setCreateTime(new Date().getTime());
-			newsMessage.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_NEWS);
-			newsMessage.setFuncFlag(0);
-			newsMessage.setArticleCount(articleList.size());
-			newsMessage.setArticles(articleList);
-		} catch (Exception e) {
-			logger.error("generateCoupons error",e);
-		}
-		return newsMessage;
-	}
-
-	private UserCoupon allocateCouponToUser(String fromUserName, String toUserName) throws Exception {
-		UserCoupon userCoupon = new UserCoupon();
-		userCoupon.setCouponValue(10);
-		Date createTime = new Date();
-		userCoupon.setCreateTime(createTime);
-		userCoupon.setExpireTime(WechatUtil.plusDay(30, createTime));
-		userCoupon.setFromUserName(fromUserName);
-		userCoupon.setToUserName(toUserName);
-		userCoupon.setValidateFlag(1);
-		return userCouponService.saveUserCoupon(userCoupon);
-	}
-
-
-
-	private String useCoupon(UserCoupon userCoupon) throws Exception {
-		if (userCoupon.getValidateFlag().intValue() == 0) {
-			return "该优惠券已经被使用";
-		}
-
-		if (userCoupon.getExpireTime().before(new Date())) {
-			return "该优惠券已经过期";
-		}
-
-		userCoupon.setValidateFlag(0);
-		userCouponService.saveUserCoupon(userCoupon);
-		return "success";
 	}
 }

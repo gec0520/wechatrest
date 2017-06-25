@@ -1,8 +1,19 @@
-package com.haipai.common.usergroup;
+package com.haipai.common.entity;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "USER_GROUP_INFO")
 public class UserGroupInfo {
+	private Long id;
 	private String subscribe;
-	private String openid;
+	private String wechatPublicId;
+	private String openId;
 	private String nickname;
 	private String sex;
 	private String language;
@@ -15,6 +26,18 @@ public class UserGroupInfo {
 	private String remark;
 	private String groupid;
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "ID")
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	@Column(name = "SUBSCRIBE")
 	public String getSubscribe() {
 		return subscribe;
 	}
@@ -23,14 +46,25 @@ public class UserGroupInfo {
 		this.subscribe = subscribe;
 	}
 
-	public String getOpenid() {
-		return openid;
+	@Column(name = "WECHAT_PUBLIC_ID")
+	public String getWechatPublicId() {
+		return wechatPublicId;
 	}
 
-	public void setOpenid(String openid) {
-		this.openid = openid;
+	public void setWechatPublicId(String wechatPublicId) {
+		this.wechatPublicId = wechatPublicId;
+	}
+	
+	@Column(name = "OPEN_ID")
+	public String getOpenId() {
+		return openId;
 	}
 
+	public void setOpenId(String openId) {
+		this.openId = openId;
+	}
+
+	@Column(name = "NICK_NAME")
 	public String getNickname() {
 		return nickname;
 	}
@@ -39,6 +73,7 @@ public class UserGroupInfo {
 		this.nickname = nickname;
 	}
 
+	@Column(name = "SEX")
 	public String getSex() {
 		return sex;
 	}
@@ -47,6 +82,7 @@ public class UserGroupInfo {
 		this.sex = sex;
 	}
 
+	@Column(name = "LANGUAGE")
 	public String getLanguage() {
 		return language;
 	}
@@ -55,6 +91,7 @@ public class UserGroupInfo {
 		this.language = language;
 	}
 
+	@Column(name = "CITY")
 	public String getCity() {
 		return city;
 	}
@@ -63,6 +100,7 @@ public class UserGroupInfo {
 		this.city = city;
 	}
 
+	@Column(name = "PROVINCE")
 	public String getProvince() {
 		return province;
 	}
@@ -71,6 +109,7 @@ public class UserGroupInfo {
 		this.province = province;
 	}
 
+	@Column(name = "COUNTRY")
 	public String getCountry() {
 		return country;
 	}
@@ -79,6 +118,7 @@ public class UserGroupInfo {
 		this.country = country;
 	}
 
+	@Column(name = "HEAD_IMG_URL")
 	public String getHeadimgurl() {
 		return headimgurl;
 	}
@@ -87,6 +127,7 @@ public class UserGroupInfo {
 		this.headimgurl = headimgurl;
 	}
 
+	@Column(name = "SUBSCRIBE_TIME")
 	public String getSubscribe_time() {
 		return subscribe_time;
 	}
@@ -95,6 +136,7 @@ public class UserGroupInfo {
 		this.subscribe_time = subscribe_time;
 	}
 
+	@Column(name = "UNION_ID")
 	public String getUnionid() {
 		return unionid;
 	}
@@ -103,6 +145,7 @@ public class UserGroupInfo {
 		this.unionid = unionid;
 	}
 
+	@Column(name = "REMARK")
 	public String getRemark() {
 		return remark;
 	}
@@ -111,6 +154,7 @@ public class UserGroupInfo {
 		this.remark = remark;
 	}
 
+	@Column(name = "GROUP_ID")
 	public String getGroupid() {
 		return groupid;
 	}

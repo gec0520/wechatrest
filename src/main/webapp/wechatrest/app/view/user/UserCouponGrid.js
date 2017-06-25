@@ -5,10 +5,12 @@ Ext.define('WeChatRest.view.user.UserCouponGrid',{
 	controller : 'usercouponcontroller',
 	title : '用户红包列表',
 	store : 'UserCouponStore',
-	border : true,
+	//border : true,
 	height : document.documentElement.clientHeight,
 	width : '100%',
+	autoWidth:true,
 	loadMask: true,
+	renderTo:Ext.get("orgGrid"),
 	columns : [
    		{
    			text : '红包Id',
@@ -18,7 +20,7 @@ Ext.define('WeChatRest.view.user.UserCouponGrid',{
    			hidden : true
    		},
    		{
-   			text : '红包金额',
+   			text : '优惠券金额',
    			dataIndex : 'couponValue',
    			flex : 1,
    			align : 'center',
@@ -40,41 +42,48 @@ Ext.define('WeChatRest.view.user.UserCouponGrid',{
    		},
    		{
    			xtype : 'gridcolumn',
-   			width : 280,
-   			text : '红包二维码',
-   			dataIndex : 'couponQRCode',
+   			text : '优惠券',
+   			dataIndex : 'couponType',
    			flex : 1,
    			align : 'center',
    			hidden : false,
    			renderer : function(value) {
-   				return '<input id="show" type=image style="width : 50px; height : 50px;" src="/wechatrest/resources/QRCode.jpg" title="show"/>';
+   				if(value==1){
+   					return '<input id="show" type=image style="width : 50px; height : 50px;" src="/wechatrest/resources/dyq.jpg" title="show"/>';
+   				}else if(value ==2){
+   					return '<input id="show" type=image style="width : 50px; height : 50px;" src="/wechatrest/resources/zkq.jpg" title="show"/>';
+   				}else if(value ==3){
+   					return '<input id="show" type=image style="width : 50px; height : 50px;" src="/wechatrest/resources/hb.jpg" title="show"/>';
+   				}
    			}
    		},
    		{
-   			text : '红包是否有效',
+   			text : '是否有效',
    			dataIndex : 'couponValidate',
    			flex : 1,
    			align : 'center',
-   			hidden : false
-   		}, {
-   			text : '红包创建时间',
+   			hidden : true
+   		}, 
+   		{
+   			text : '创建时间',
    			dataIndex : 'couponCreateTime',
    			flex : 1,
    			align : 'center',
    			hidden : true
-   		}, {
-   			text : '红包失效时间',
+   		}, 
+   		{
+   			text : '截止有效期',
    			dataIndex : 'couponExpireTime',
    			flex : 1,
    			align : 'center',
-   			hidden : true
+   			hidden : false
    		}],
    		listeners : {
 	   		itemclick : {
 	   			fn : 'userClick',
 	   			scope : "controller"
 	   		},
-	   		afterRender:{
+	   		afterrender:{
 	   			fn : 'reloadStore',
 	   			scope : "controller"
 	   		}

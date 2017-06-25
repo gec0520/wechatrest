@@ -27,13 +27,14 @@ Ext.define('WeChatRest.Application', {
 //				        'onMenuShareQQ'
 				      ]
 				  });
-				 /*wx.ready(function () {
-					 wx.hideMenuItems({
+				 wx.ready(function () {
+					 /*wx.hideMenuItems({
 				      menuList: [
-				        'menuItem:share:timeline', // 分享到朋友圈
+				        'menuItem:copyUrl', // 分享到朋友圈
 				      ]				
 				    });
-				 });*/
+					 wx.hideAllNonBaseMenuItem();*/
+				 });
 			}
 		});
 	}
